@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #repo addresses
-aasdkRepo="https://github.com/OpenDsh/aasdk"
-gstreamerRepo="https://github.com/GStreamer/qt-gstreamer"
-openautoRepo="https://github.com/openDsh/openauto"
-h264bitstreamRepo="https://github.com/aizvorski/h264bitstream"
+aasdkRepo="https://github.com/chrshdl/aasdk"
+gstreamerRepo="https://github.com/chrshdl/qt-gstreamer"
+openautoRepo="https://github.com/chrshdl/openauto"
+h264bitstreamRepo="https://github.com/chrshdl/h264bitstream"
 
 #Help text
 display_help() {
@@ -162,7 +162,7 @@ if [ $deps = false ]
   else
     if [ $BULLSEYE = false ]; then
       echo Adding qt5-default to dependencies
-      dependencies[${#dependencies[@]}]="qt5-default"
+      dependencies[${#dependencies[@]}]="qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools"
     fi
     echo installing dependencies
     #loop through dependencies and install
