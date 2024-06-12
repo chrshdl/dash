@@ -358,12 +358,12 @@ QWidget *Session::Forge::volume_slider(bool buttons) const
         auto lower_button = new QPushButton();
         lower_button->setFlat(true);
         this->iconize("volume_down", lower_button, 26);
-        QObject::connect(lower_button, &QPushButton::clicked, [this]{ this->arbiter_.decrease_volume(10); });
+        QObject::connect(lower_button, &QPushButton::clicked, [this]{ this->arbiter_.decrease_volume(5); });
 
         auto raise_button = new QPushButton();
         raise_button->setFlat(true);
         this->iconize("volume_up", raise_button, 26);
-        QObject::connect(raise_button, &QPushButton::clicked, [this]{ this->arbiter_.increase_volume(10); });
+        QObject::connect(raise_button, &QPushButton::clicked, [this]{ this->arbiter_.increase_volume(5); });
 
         layout->addWidget(lower_button);
         layout->addWidget(raise_button);

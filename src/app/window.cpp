@@ -6,6 +6,8 @@
 #include "app/utilities/icon_engine.hpp"
 #include "app/widgets/dialog.hpp"
 
+#include "DashLog.hpp"
+
 #include "app/window.hpp"
 
 Dash::NavRail::NavRail()
@@ -224,6 +226,18 @@ MainWindow::MainWindow(QRect geometry)
     this->stack->addWidget(dash);
     dash->init();
 
+    m_client = new QMqttClient(this);
+    m_client->setUsername("usermqtt");
+    m_client->setPassword("1234");
+    m_client->setHostname("localhost");
+    m_client->setPort(1883);
+
+    connect(m_client, &QMqttClient::disconnected, this, &MainWindow::onDisconnect);
+    connect(m_client, &QMqttClient::connected, this, &MainWindow::onConnect);
+    connect(m_client, &QMqttClient::messageReceived, this, &MainWindow::onMessageReceived);
+
+    m_client->connectToHost();
+
     this->arbiter.system().brightness.set();
 
     if (this->arbiter.layout().fullscreen.on_start)
@@ -250,4 +264,55 @@ void MainWindow::set_fullscreen(Page *page)
     auto widget = page->container()->take();
     this->stack->addWidget(widget);
     this->stack->setCurrentWidget(widget);
+}
+
+
+void MainWindow::onConnect()
+{
+    auto subscription = m_client->subscribe(QMqttTopicFilter("volcmd"));
+    if (!subscription) {
+        DASH_LOG(info) << "[MQTT]" << " Could not subscribe. Is there a valid connection?";
+        return;
+    }
+    DASH_LOG(info) << "[MQTT]" << " Connected and subscribed to topic volcmd";
+    // test with:
+    // mosquitto_pub -h localhost -p 1883 -u usermqtt -P 1234 -t volcmd -m "decrease"
+    // mosquitto_pub -h localhost -p 1883 -u usermqtt -P 1234 -t volcmd -m "increase"
+}
+
+void MainWindow::onDisconnect()
+{
+    DASH_LOG(info) << "[MQTT]" << " Disconnected";
+}
+
+
+void MainWindow::onMessageReceived(const QByteArray &message, const QMqttTopicName &topic)
+{
+    const QString content =
+        QLatin1String(" Received Topic: ")
+        + topic.name()
+        + QLatin1String(",")
+        + QLatin1String(" Message: ")
+        + message;
+
+    DASH_LOG(info) << "[MQTT]" << content.toStdString();
+
+    if (message.contains("decrease"))
+    {
+        this->arbiter.decrease_volume(5);
+    }
+    if (message.contains("increase"))
+    {
+        this->arbiter.increase_volume(5);
+    }
+    const int volume = this->arbiter.system().volume;
+    int result = m_client->publish(QMqttTopicName("volstatus"), QString::number(volume).toUtf8());
+
+    DASH_LOG(info) << "[MQTT]" << " Current volume: " << QString::number(volume).toStdString();
+
+    // test with:
+    // mosquitto_sub -h localhost -p 1883 -u usermqtt -P 1234 -t volstatus
+
+    if ( result == -1)
+        DASH_LOG(info) << "[MQTT]" << " Could not publish message";
 }

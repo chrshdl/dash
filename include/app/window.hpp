@@ -10,6 +10,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QStackedWidget>
+#include <QMqttClient>
 
 #include "app/config.hpp"
 #include "app/pages/openauto.hpp"
@@ -64,9 +65,16 @@ class MainWindow : public QMainWindow {
    protected:
     void showEvent(QShowEvent *event) override;
 
+   private slots:
+    void onDisconnect();
+    void onConnect();
+    void onMessageReceived(const QByteArray &message, const QMqttTopicName &topic);
+
    private:
     Arbiter arbiter;
     QStackedWidget *stack;
+
+    QMqttClient *m_client;
 
     MainWindow *init(QRect geometry);
 };
