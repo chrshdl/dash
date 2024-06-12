@@ -40,3 +40,18 @@ cd dash
 
 ./install.sh
 ```
+
+### 2. Build mqtt
+```
+sudo apt install qtbase5-private-dev
+	
+cd ~
+
+git clone https://github.com/qt/qtmqtt.git --branch 5.15.2
+cd qtmqtt
+qmake
+make
+
+sudo make install
+```
+
